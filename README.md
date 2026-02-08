@@ -1,2 +1,2 @@
 # tv
-tv
+Lista iptv para uso pessoal
