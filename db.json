@@ -1,0 +1,196 @@
+{
+  "entrevista-tecnica": [
+    { 
+      "id": "1", 
+      "titulo": "Router, Guarda de Rotas e Lazy Loading:", 
+      "descricao": "Carrega módulos ou classes através de router(rotiamento angular) e recursos apenas quando são necessários, otimizando a velocidade de carregamento da aplicação e reduzindo o tamanho do código inicial.Essa solução diminui o tempo de carregamento, mas sem limitar o conteúdo. Isso reduz o bundle inicial em 40%... CanActivate: ele nos permite gerenciar a navegação das nossas rotas, permitindo ativar determinada rota ou não.Guarda de rotas filha = CanActivateChild usado para permissões para a rota determinada.Exemplo de esconder a rota caso o usuário não esteja logado.Tem que está logado para acessar a url.",
+      "exemplo": "Router:\nExemplo de definição de rotas:\nconst routes: Routes = [\n    // rota raiz\n    { path: '', component: HomeComponent },\n     //rota /about:\n    { path: 'about', component: AboutComponent },\n     //rota coringa (404):\n    { path: '**', redirectTo: '' },\n     //rota com parametro id:\n    { path: 'product/:id', component: ProductComponent },\n    //Lazy Loading por module:\n    { path: 'admin', loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) },\n     //Lazy Loading com standalone por componente:\n    { path: 'admin', loadComponent:()=> import('./admin/admin.component').then(c = > c.AdminComponent) },\n    //Rotas Protegidas com Guard (CanActivate):\n    { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] }\n];\n\nHtml:\nPara navegar entre as rotas sem recarregar a página:\n<a routerLink='/'>Home</a>\n<a routerLink='/about'>About</a>\n\nAppComponent:\nE para renderizar o conteúdo da rota:\n<router-outlet></router-outlet>\n\nts:\nCaptura o parâmetro id no componente\nconstructor(private route: ActivatedRoute) {}\nngOnInit(): void {\n    const id = this.route.snapshot.paramMap.get('id');\n}\n\nguard.ts\n@Injectable({ providedIn: 'root' })\nexport class AuthGuard implements CanActivate {\n    constructor(private auth: AuthService, private router: Router) {}\n    canActivate(): boolean {\n        if (this.auth.isLoggedIn()) {\n            return true;\n        }\n        this.router.navigate(['/login']);\n        return false;\n    }\n}"
+    },
+    { 
+      "id": "2", 
+      "titulo": "Standalone components:", 
+      "descricao": "São componentes autônomos que não precisam estar declarados em um módulo. Não precisa criar um módulo só para declarar um componente. Tornam a manutenção mais ágil standalone: true, //indica que é standalone imports: []// outros componentes, diretivas ou pipes podem ser importados aqui Cada componente é autônomo, fácil de importar e reutilizar. Facilita nos Testes unitários ficam mais simples porque não é preciso configurar módulos extensos. Exemplo: loadComponent: () => import('./home/home.component').then(m => m.HomeComponent)",
+      "exemplo": "@Component({\n selector: 'app-root';\n standalone: true;\n imports:[RouterOutlet, DetalhesEntrevistaComponent]; \n templateUrl: './app.component.html'; \n styleUrl: './app.component.css'\n}); \nexport class AppComponent {}"
+    },
+    {
+      "id": "3", 
+      "titulo": "Signals: a partir da versão 16", 
+      "descricao": "Um Signal é basicamente um container reativo de valor. Ele armazena um valor. Ele notifica automaticamente quem depende dele quando o valor muda. Ou seja, quando você altera o valor de um Signal, todos os lugares que “ouvem” esse Signal são atualizados automaticamente. Eles funcionam como variáveis que guardam um valor atual e notificam automaticamente quando esse valor muda, permitindo que o Angular atualize a UI sem necessidade de subscribe ou async pipe. Diferente dos Observables do RxJS, que são ideais para fluxos assíncronos e eventos complexos, os signals são mais simples e focados em estado local e sincrônico dentro do componente.signals import { signal } from angular/core é um recurso nativo do angular entrou no angular 16 substitui o RxJs.",
+      "exemplo": ""
+    },
+    {
+      "id": "4", 
+      "titulo": "RxJS biblioteca:", 
+      "descricao": "async pipe se inscreve e desescreve de maneira automatica: Para uma melhor performanse usando Observables, async pipe, takeUntil etc. Usando subscribe e unsubscribe desinscrever Observable = subscribe() como metodos next(), errors() e complete(). Dentro do observable tem os operadores muito utilizados como takeUntil()-> desiscrever automaticamente, filter(), map(), concatMap(), mergeMap(), switchMap(),debounceTime(), distinctUntilChanged() e entre outros. Para utilizar requisições http eu utilizo operador take(2) colocando o valor de quantas vezes quer receber a resposta. ngOnDestroy() é o local onde desescrevemos o componente. O takeUntil(this.destroy$) garante que qualquer observable atrelado será cancelado quando o componente for destruído. Isso evita vazamentos de memória e chamadas HTTP desnecessárias. async pipe é usado para templates Angular para assinar automaticamente Observables ou Promises, renderizar seus valores e ainda gerenciar o unsubscribe quando o componente é destruído, evitando memory leaks.",
+      "exemplo": "Qual a diferença do .mergeMap() e .switchMap():\n.mergeMap():não cancela a requisição anterior, rende multiplos resultados simultaneamente, upload de multiplos arquivos;\n.switchMap(): cancela a requisição anterior, Não responde múltiplos resultados simultaneamente.\n\nQual a diferença do .map() e .filter():\n.map()-> Muda o conteúdo,transforma o valor emitido, operador map pega cada valor emitido e retorna outro valor transformado.Ele não descarta nenhum valor, apenas o altera.\n.filter()-Muda a quantidade, filtra quais valores irão passar adiante, operador filter decide se o valor deve ou não continuar na stream.Ele mantém apenas os valores que atendem à condição."
+    },
+    {
+      "id": "5", 
+      "titulo": "Input e Output properties:", 
+      "descricao": "Comunicação de componentes entre pai e filho Input() -> Quando o pai passa dados para o filho. Output() -> (com EventEmitter) enviar eventos do filho para pai.",
+      "exemplo": "Input() nome: string = 'Ronaldo';\n<nome-classe [nome]='nome'>Ronaldo</nome-classe>;\n\n@Output() buttonClicked = new EventEmitter<string>();\nonClickButton() {\n // Emite o evento 'buttonClicked' com uma mensagem;\n this.buttonClicked.emit('Botão do filho clicado!');\n}"
+    },
+    {
+      "id": "6", 
+      "titulo": "Subject e BehaviorSubject", 
+      "descricao": "Subject: É um obsrvable usado para emitir eventos. É usado para atualizar multiplos componentes ao mesmo tempo, implementado no service É usado quando precisar de comunicação entre componentes que não precisa ter relação pai e filho. Emite valore através do next() Emite valores após a inscrição || BehaviorSubject: Serve para notificar componentes sobre alterações de estado mantendo sempre o último valor para quem chegar depois.",
+      "exemplo": "" 
+    },
+    {
+      "id": "7", 
+      "titulo": "Interceptors:", 
+      "descricao": "São classes que interceptam requisições e respostas HTTP feitas com HttpClient, permitindo que você as modifique, adicione cabeçalhos, trate erros, etc., de forma centralizada. Fluxo em funcionamento:Quando você faz uma requisição usando o HttpClient, o interceptor entra em ação.Antes de enviar, ele: pega o token salvo no localStorage via AuthService,adiciona no header Authorization.Enquanto a requisição está rodando, o LoaderService ativa o componente <app-loader> e mostra o spinner.Se der erro 401, o interceptor chama authService.logout() e redireciona pro login.Quando a resposta chega (ou dá erro), o finalize() garante que o loader será escondido.",
+      "exemplo": "import { Injectable } from '@angular/core';\nimport { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';\nimport { Observable, throwError } from 'rxjs';\nimport { catchError, finalize } from 'rxjs/operators';\nimport { AuthService } from './auth.service';\nimport { LoaderService } from './loader.service';\n\n@Injectable()\nexport class AuthInterceptor implements HttpInterceptor {\n  constructor(private authService: AuthService,private loaderService: LoaderService) {}\n\n  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {\n    this.loaderService.show();\n    let authReq = req;\n    const token = this.authService.getToken();\n\n    if (token) {\n      authReq = req.clone({\n        setHeaders: {\n          Authorization: `Bearer ${token}`\n        }\n      });\n    }\n\n    return next.handle(authReq).pipe(\n      catchError((error: HttpErrorResponse) => {\n        if (error.status === 401) {\n          this.authService.logout();\n        }\n        return throwError(() => error);\n      }),\n      finalize(() => {\n        this.loaderService.hide();\n      })\n    );\n  }\n}\n"
+    },
+    {
+      "id": "8", 
+      "titulo": "SPA-Single Page Aplication:", 
+      "descricao": "Quando o usuário navega entre páginas, o Angular atualiza apenas a parte necessária do DOM.Quando carrega o router pagina-principal.html elá ira carregar uma unica vez com todo html, css, javascript",
+      "exemplo": "" 
+    },
+    {
+      "id": "9", 
+      "titulo": "Metodologia ageis: Scrum e Kanban", 
+      "descricao": "É uma metodologia usado com sprints visando a entrega e organização do projeto | Com participações de reuniões como Daily, Planning, Review e Retrospective",
+      "exemplo": "" 
+    },
+    {
+      "id": "10", 
+      "titulo": "JWT (Token):", 
+      "descricao": "É um token de acesso (string) É usado principalmente para autenticação e autorização.Geralmente no localStorage ou sessionStorage guarda esse token () e o envia no header Authorization em cada requisição.É uma string dividida em 3 partes codificada em Base64URL.Em cada requisição, o token é enviado no header Authorization: Bearer <token>Se inválido, retorna 401 Unauthorized.Usar Route Guards (CanActivate) para proteger rotas.",
+      "exemplo": "" 
+    },
+    {
+      "id": "12", 
+      "titulo": "Micro-Front-End:", 
+      "descricao": "Permite exportar módulos/componentes e consumi-los para reuso em diversas aplicações.Deploys independentes e melhor reuso de código, embora aumente a complexidade de setup e integração.",
+      "exemplo": "" 
+    },
+    {
+      "id": "13", 
+      "titulo": "Injeção de dependencia:", 
+      "descricao": "No angular é o mecanismo que permite que classes recebam suas dependências de forma automática,sem precisar instanciá-las manualmente.Por exemplo, quando um componente precisa de um serviço, basta declarar no construtor, e o Angular injeta a instância automaticamente. || @Injectable()= Decorator marca uma classe como “injetável”, ou seja, que pode ser fornecida via Dependency Injection (DI).No Angular, o próprio framework gerencia a Injeção de Dependência através do Injector.Quando declaramos um serviço com @Injectable({ providedIn: 'root' }),E dentro do proprio serviço fornece o http para inserir as requisições get,post e put.O Angular cria e fornece a instância para os componentes que precisam dela,apenas declarando no construtor.Isso elimina a necessidade de instanciar manualmente serviços e promove baixo acoplamento.",
+      "exemplo": "" 
+    },
+    {
+      "id": "14", 
+      "titulo": "Quais são os modificadores de dependencia do angular:", 
+      "descricao": "Segue decorator -> São 4: @Self,  @SkipSelf, @Host",
+      "exemplo": "@Optional():\n//Se LoggerService não estiver registrado no injetor, o Angular não dá erro, apenas define loggerService = null\nconstructor(@Optional() private loggerService?: LoggerService) {}\nngOnInit() {\n    this.loggerService?.log('Componente inicializado');\n}\n@Self(),\n@SkipSelf(),\n@Host()" 
+    },
+    {
+      "id": "15", 
+      "titulo": "Design Pattern(Padrões de projetos):", 
+      "descricao": "MVC: (Model-View-Controller) - usando camadas de M-(Modelo) - representa a tipagem os dados e a lógica de negócio da aplicação V-(Visão)- representa a interface do usuário, mostrando os dados. C-(Controle) - faz a ligação entre o Model e a View",
+      "exemplo": "" 
+    },
+    {
+      "id": "16", 
+      "titulo": "Principios Solid e Clean Code:", 
+      "descricao": "SOLID: princípios de design orientado a objetos é um conjunto de princípios de design orientado a objetos que ajudam a escrever código mais organizado,flexível e de fácil manutenção.Tornam o código mais limpo, desacoplado e fácil de manter.Exemplo: Separação de responsabilidades, Conter varias Interfaces para implementar só o que realmente precisa; CLEAN CODE: =  Conjunto de boas praticas para escrever código | REUTILIZAVEL(reuso de código) | FACIL LER(legível por outros desenvolvedores) | FACIL MANTER(qualquer um pode dar manutenção sem dor de cabeça) | SIMPLES(sem complexidade desnecessária) | CONFIAVEL(Reduz chances de erros)",
+      "exemplo": "" 
+    },
+    {
+      "id": "17", 
+      "titulo": "ChangeDetectionStrategy.OnPush ou .Default:", 
+      "descricao": "O Change Detection é o mecanismo interno do Angular responsável por verificar quando algo mudou no componente (variáveis, inputs, eventos, etc.) e atualizar o template automaticamente.Em outras palavras:É o sistema que faz o Angular saber “opa, essa variável mudou, preciso atualizar o HTML”.É uma estratégia de detecção de mudanças no Angular que limita a atualização do componente apenas quando os @inputs mudam de referência ou quando há eventos assíncronos. É quando ele verifica se um evento dentro do componente foi emitido.Ele melhora a performance em aplicações grandes, mas exige trabalhar com objetos imutáveis e mais cuidado ao atualizar dados.",
+      "exemplo": "Default: atualiza qualquer evento global, performance media, ideal para aplicações pequenas/médias.\nOnPush: atualiza apenas quando @Input muda ou Observable/Signal emite, performance alta e Aplicações grandes e reativas." 
+    },
+    {
+      "id": "18", 
+      "titulo": "Event Binding | Two-Way Data Binding | Interpolação | seus tipos:", 
+      "descricao": "Event Binding -> (evento)='função($event)' | Two-Way Data Binding -> [(ngModel)] = propriedade -> Tem um termo utilizado com banana na caixa [( )] que combina property binding + event binding. | Interpolaçào -> Duas chaves dentro da outra {{ }}",
+       "exemplo": "Event Binding:\n(submit)='funcao($event)';\n(click)='função($event)';\n(keyup)='funcao($event)';\n(blur)='função($event)';\n(mouseover)='funcao($event)';\n\nProperty Binding:\n[]='propriedade';\n\nTwo-Way Data Binding:\n[(ngModel)]='propriedade';\n\nInterpolação:\n{{ propriedade }}" 
+    },
+   {
+      "id": "20", 
+      "titulo": "Pipes angular e customizada:", 
+      "descricao": "Pipe é uma funcionalidade para transformar dados antes de exibir no template.Serve para formatar datas, formata valores monetários e transformação de texto ex:maiuculo e minusculo. O pipe puro utiliza uppercase, date, currency. O pipe impuro é customizado",
+      "exemplo": "Formatação de moeda BRL: usando CurrencyPipe.\nPipe do angular:\n{{ preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}" 
+    },
+    {
+      "id": "21", 
+      "titulo": "Testes unitarios Jasmine, Jest e Karma:", 
+      "descricao": "Jasmine(framework de testes)/Karma(executor de testes). Testar serviços e componentes para medir a cobertura até 70% do código.Estrutura básica de teste (describe, it, expect). testar serviços (TestBed). testar componentes (fixture, detectChanges, DOM testing). Uso de mocks e spies para simular dependências. Mocks são objetos simulados que substituem serviços ou dependências reais nos testes. No Angular, usamos Jasmine para criar mocks de serviços e injetá-los nos testes via TestBed,controlando retornos e evitando chamadas externas, o que torna os testes mais rápidos, previsíveis e isolados. Mock/Spy → evita chamar serviços reais.",
+      "exemplo": "import {TestBed} from '@angular/core/testing';\nimport { DetalhesEntrevistaService } from './detalhes-entrevista.service';\n\ndescribe('DetalhesEntrevistaService', () => {\n    let service: DetalhesEntrevistaService;\n    beforeEach(() => {\n        TestBed.configureTestingModule({});\n        service = TestBed.inject(DetalhesEntrevistaService);\n    });\n    it('should be created', () => {\n        expect(service).toBeTruthy();\n    });\n});" 
+    },
+    {
+      "id": "22", 
+      "titulo": "CI/CD Esteira ou Pipeline:", 
+      "descricao": "É o conjunto de práticas que permitem integrar código frequentemente e entregar builds automatizadas de forma confiável.Integração do codigo juntamente com a esteira no commit e push que a esteira executa automaticamente. Garante consistência do código. Reduzindo erros manuais e garantindo que a aplicação esteja sempre funcionando.",
+      "exemplo": "" 
+    },
+    {
+      "id": "23", 
+      "titulo": "Ferramenta Sonar:", 
+      "descricao": "Serve para analisar a qualidade e segurança do código. Instalando ferramenta local e passando na esteira CI/CD com jenkins. SonarQube: análise de qualidade do código (bugs, code smells, cobertura de testes). Veracode: análise de segurança (SAST/DAST), vulnerabilidades e compliance. Permite bloquear deploy se violar políticas.",
+      "exemplo": "" 
+    },
+    {
+      "id": "24", 
+      "titulo": "Variaveis: tem escopo global ou local", 
+      "descricao": "var =  tem escopo global ou escopo de funçao. || let e const =  tem escopo de bloco. || const= não podem ser alterada(atualizada) e  nem declaradas novamente. || O escopo é global quando uma variável é declarada fora de uma função. || var tem escopo de função quando é declarada dentro de uma função. || Isso significa que ela está disponível e pode ser acessado apenas nessa função.",
+      "exemplo": "" 
+    },
+    {
+      "id": "25", 
+      "titulo": "Diferença de Promise e observable:", 
+      "descricao": "Promise processa um único evento quando uma operação assíncrona é concluída ou falha. Promisses emitem 1 unico valor. Promisses execução imediata. Promisses é assincrona. Promisses não cancelavel. || Observable permite passar zero ou mais eventos onde o callback é chamado para cada evento. Observable emitem multiplo valores. Observable execução sob demanda(Lazy). Observable é assincrona ou não assincrona. Observable cancelavel utilizando unsubscribe para cancelar subscrição",
+      "exemplo": "" 
+    },
+    {
+      "id": "26", 
+      "titulo": "Diretivas: Anterior *ngFor *ngIf *ngClass ||  Atual @For @If @else @empty", 
+      "descricao": "Server para modificar elementos do DOM  e Estilos com ngClass.Nova diretiva-> @For @If @else @empty",
+      "exemplo": "@if(value == 2){\n    <p>Valor igual a 2</p>\n}@else\n if(value != 2){\n    <p>Valor diferente de 2</p>\n}@else{\n    <p>{{ value }}</p>\n}\n@for(item of lista; track item){\n    <p>{{ item }}</p>\n}\n@empty{\n    <p>Vazio!!!</p>\n}" 
+    },
+    {
+      "id": "27", 
+      "titulo": "Tipos de dados Angular primitivo e avançado:", 
+      "descricao": "Primitivos: string → textos | number → números (inteiros, decimais) | boolean → verdadeiro/falso | null, undefined || Avançados: array → lista de valores (string[], number[]) | tuple → tupla com posições fixas ([string, number]) | object → objeto genérico | any → qualquer coisa (evitar se possível) | unknown → qualquer coisa, mas exige checagem antes | void → usado em funções que não retornam nada | never → funções que nunca retornam (ex: erro infinito)",
+      "exemplo": "" 
+    },
+    {
+      "id": "28", 
+      "titulo": "Less/Sass pré processadores", 
+      "descricao": "É um pré-processador CSS, ou seja, uma ferramenta que adiciona recursos avançados ao CSS tradicional como funcionalidades: variáveis,mixins, funçoes e extends. Permitem temas dinâmicos, criação de variaveis e são manipuláveis.Facilita aninhamento, herança, mixins, funções e estruturas reutilizáveis.",
+      "exemplo": "$primary-color: #0066ff;\nbutton{\n    background: $primary-color;\n        &:hover{\n            background: darken($primary-color, 10%);\n        }\n}" 
+    },
+    {
+      "id": "29", 
+      "titulo": "Css em geral e Responsividade", 
+      "descricao": "Responsividade com Flexbox, CSS-Grid, midiaQuery ou framework com bootstrap. || Padrão BEM (bloco,elemento e modificador) Faz uma hierarquia organizando css entre pai e filhos",
+      "exemplo": "" 
+    },
+    {
+      "id": "30", 
+      "titulo": "Git(comandos) e Git-Flow(nomeclaturas):", 
+      "descricao": "São repositorios como bitbucket, gitLab, gitAzure microsoft e GitHub. || Comandos mais usado como: git checkout | git add | git commit | git merge | git push. Git Flow: O Git Flow é um modelo de organização de branches no Git, pensado para equipes e projetos profissionais, garantindo um fluxo controlado de desenvolvimento, testes, homologação e entrega.",
+      "exemplo": "Comandos:\ngit branch -m main → renomeia a branch principal para main.\ngit push -u origin main → envia o projeto para o GitHub e define o origin/main como upstream.\ngit add . → adiciona todos os arquivos ao stage.\ngit commit -m 'mensagem' → cria o commit.\ngit checkout -- nome-arquivo → descartar alteração\ngit reset nome-do-arquivo → Desfazer add\n\nGit Flow:\nmain (ou master) — Produção\ndevelop — Ambiente de desenvolvimento/homologação\nfeature/[nome-da-feature] — Nova funcionalidade.\nrelease/[versão] — Preparar versão para deploy em produção.\nhotfix/[nome-do-fix] — Correção urgente em produção" 
+    },
+    {
+      "id": "31", 
+      "titulo": "Bibliotecas Front-End:", 
+      "descricao": "Os mais conhecido no mercado como jQuery, bootstrap, angular-material para usar em componentes.",
+      "exemplo": "" 
+    },
+    {
+      "id": "32", 
+      "titulo": "API Rest", 
+      "descricao": "Serve para consumir um conjunto de endpoint e populando em componentes através de serviços. | No front-end, a API é a porta de entrada para dados vindos do servidor. Ela funciona como uma ponte entre o front e o back. | É baseada em métodos HTTP(Requisições: Get, Post, Put e Delete) e JSON",
+      "exemplo": "" 
+    },
+    {
+      "id": "33", 
+      "titulo": "Design System || UX || Figma", 
+      "descricao": "É um conjunto de regras, padrões visuais e componentes reutilizáveis no desenvolvimento de interfaces. Ele une design e código — por exemplo, cores, tipografia, espaçamento e componentes como botões, inputs e cards — para que tenha identidade visual e comportamento",
+      "exemplo": "" 
+    },
+    {
+      "id": "34", 
+      "titulo": "", 
+      "descricao": "",
+      "exemplo": "" 
+    }
+  ]
+}
